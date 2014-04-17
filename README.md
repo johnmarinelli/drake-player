@@ -1,13 +1,8 @@
 <html>
 <head>
-<style>
-.center{
-	text-align: center;
-}
-</style>
 </head>
 
 <body>
-<img src="drake-as-a-child-3.jpg" class="center"></img>
+<img src="drake-as-a-child-3.jpg" style="text-align:center"></img>
 </body>
 </html>
