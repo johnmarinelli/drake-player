@@ -1,5 +1,11 @@
 <html>
+<head>
+<style>
+.center{
+	text-align: center;
+}
 
-<img src="drake-as-a-child-3.jpg"></img>
+</head>
+<img src="drake-as-a-child-3.jpg" class="center"></img>
 
 </html>
