@@ -4,8 +4,10 @@
 .center{
 	text-align: center;
 }
-
+</style>
 </head>
-<img src="drake-as-a-child-3.jpg" class="center"></img>
 
+<body>
+<img src="drake-as-a-child-3.jpg" class="center"></img>
+</body>
 </html>
