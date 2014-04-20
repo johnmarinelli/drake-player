@@ -12,7 +12,7 @@ class Player():
 		for (root, dirs, files) in os.walk('mp3'):
 			for f in files:
 				self.Files.append(root + "/" + f) #add each file to our list of Files
-
+	
 	def __init__(self):
 		"""Initializes player in this order:
 		   External libraries
@@ -23,11 +23,12 @@ class Player():
 		pygame.init()
 	
 		self.isPaused = False
+		self.isStopped = False
 		self.Files = []
 		self.CurrentPosition = 0;
 
 		self.__loadFiles()
-	
+
 		self.TotalFiles = len(self.Files)
 	
 	def load(self, filename):
@@ -48,6 +49,11 @@ class Player():
 
 		self.load(self.Files[self.CurrentPosition])
 		mixer.music.play() #play once
+		self.isStopped = False
+
+	def playSong(self, song):
+		"""Plays a specific song"""
+		
 
 	def pause(self):
 		mixer.music.unpause() if self.isPaused else mixer.music.pause()	
@@ -55,6 +61,7 @@ class Player():
 
 	def stop(self):
 		mixer.music.stop()
+		self.isStopped = True
 
 	def next(self):
 		"""Stops the currently playing music, loads up a new piece of music(set boolean rand value later!), 
@@ -65,6 +72,27 @@ class Player():
 		self.CurrentPosition = self.CurrentPosition + 1
 		self.play()
 
+p = Player()
+nextStrings = ['n', 'ne', 'next']
+stopStrings = ['s', 'st', 'stop']
+
+def handleInput(userinput):
+	if any(userinput in string for string in nextStrings):
+		p.next()
+	
+	elif any(userinput in string for string in stopStrings):
+		p.stop()
+
+	elif any(userinput in string for string in p.Files):
+		p.play()
+		
 #debug
 if __name__ == '__main__':
-	p = Player()
+	p.play()
+
+	while True:
+		if not p.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
+			p.next()
+
+		userinput = raw_input('DrakePlayer: ')
+		handleInput(userinput)
