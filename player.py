@@ -43,7 +43,7 @@ class Player():
 			print "Can't find " + filename
 
 	def play(self):
-		"""Plays the CURRENTLY LOADED file"""
+		"""Plays the CURRENTLY LOADED file.  Note that this function doesn't call self.stop()"""
 		if self.CurrentPosition > self.TotalFiles:	#check if we're in valid space
 			self.CurrentPosition = 0
 
@@ -53,7 +53,10 @@ class Player():
 
 	def playSong(self, song):
 		"""Plays a specific song"""
-		
+		#currently only plays one song; what if userinput returns 2 songs?  queue them up?
+		self.stop()
+		self.CurrentPosition = self.Files.index(song[0])
+		self.play()
 
 	def pause(self):
 		mixer.music.unpause() if self.isPaused else mixer.music.pause()	
@@ -74,23 +77,49 @@ class Player():
 
 p = Player()
 nextStrings = ['n', 'ne', 'next']
+playStrings = ['pl', 'play']
 stopStrings = ['s', 'st', 'stop']
+pauseStrings = ['p', 'pa', 'pause']
+quitStrings = ['q', 'quit']
+
+isPlaying = True
 
 def handleInput(userinput):
+	"""What if a song has 'quit' in it?
+	   split string at ' '
+	"""
+	print userinput
+
 	if any(userinput in string for string in nextStrings):
 		p.next()
 	
 	elif any(userinput in string for string in stopStrings):
 		p.stop()
 
-	elif any(userinput in string for string in p.Files):
-		p.play()
-		
+	elif any(userinput in string for string in pauseStrings):
+		p.pause()
+
+	elif any(userinput.split(' ', 1)[0] in string for string in playStrings):	#"play x"
+		command = userinput.split(' ', 1)[0]  						 		 	#split once at first space
+		try:
+			song = userinput.split(' ', 1)[1]
+
+			if any(song in string for string in p.Files):				 		#if song is in list of p.Files
+				p.playSong([s for s in p.Files if (song in s)])     			#returns a list of songs that contain the same string as userinput
+		except IndexError:														 
+			p.play() 															#no song appended to the command. "play"
+
+	elif any(userinput in string for string in quitStrings):
+		p.stop()
+		isPlaying = False
+			
+	else:
+		print 'DrakePlayer cannot process' + userinput +'.\n'
 #debug
 if __name__ == '__main__':
 	p.play()
 
-	while True:
+	while isPlaying:
 		if not p.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
 			p.next()
 
