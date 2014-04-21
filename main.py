@@ -4,8 +4,9 @@ from player import Player
 from asciititle import TitleArt
 from pygame import mixer
 
-import Queue
 import threading
+import Queue
+import time
 
 p = Player()
 nextStrings = ['n', 'ne', 'next']
@@ -20,8 +21,8 @@ def handleInput(userinput):
     """What if a song has 'quit' in it?
        split string at ' '
     """
-    print userinput
-
+    print 'input is being handled'
+	
     if any(userinput in string for string in nextStrings):
         p.next()
 
@@ -48,24 +49,35 @@ def handleInput(userinput):
     else:
         print 'YololPlayer cannot process' + userinput +'.\n'
 
+"""
 def checkSongEnd():
     if not p.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
         p.next()
+"""
 
 def getInput(queue):
-        cmd = raw_input('YololPlayer: ')
-        queue.put(cmd)
+	while True:
+		cmd = raw_input('YololPlayer: ')
+		queue.put(cmd)
+		print 'input received'
+
+		handleInput(queue.get())
+
+		#time.sleep(1)
 
 #debug
 if __name__ == '__main__':
     print(TitleArt)
+   
+    queue = Queue.Queue()
+    p.play()
+    thread = threading.Thread(target=getInput, args=(queue,))
 
+    thread.start()
     p.start()
-    inputQueue = Queue.Queue()
 
-    inputThread = threading.Thread(target=getInput, args=(inputQueue,))
-    inputThread.start()
+#    while isPlaying:
+#        handleInput(queue.get())
+        #p.checkSongEnd()
 
-    while isPlaying:
-        #checkSongEnd()
-        handleInput(raw_input('YololPlayer: '))
+    thread.join()

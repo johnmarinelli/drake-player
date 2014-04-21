@@ -4,6 +4,9 @@ import pygame
 from pygame import mixer
 import os
 import threading
+import time
+
+SONG_END = pygame.USEREVENT + 1
 
 class Player(threading.Thread):
 	"""Main class for playing Drake AND ONLY DRAKE GODDAMNIT!!"""
@@ -18,9 +21,16 @@ class Player(threading.Thread):
 		print('Now playing: ' + self.Files[self.CurrentPosition])
 
 	def __loop(self):
-		while 1:
-			if not self.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
-				self.next()
+		while True:
+			#if not self.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
+			#	self.next()
+			#time.sleep(1)
+			
+			event =  pygame.event.wait()
+		
+			if event.type == SONG_END:
+				self.next() 
+			#time.sleep(1)
 
 	def __init__(self):
 		"""Initializes player in this order:
@@ -29,9 +39,10 @@ class Player(threading.Thread):
 		   Populating data attributes
 		"""
 		threading.Thread.__init__(self)
-		mixer.pre_init(44100, -16, 2, 2048) 	#frequency, size, channels, buffersize
 		pygame.init()
-	
+		mixer.pre_init(44100, -16, 2, 2048) 	#frequency, size, channels, buffersize
+		mixer.music.set_endevent(SONG_END)	
+		
 		self.isPaused = False
 		self.isStopped = False
 		self.Files = []
@@ -44,6 +55,11 @@ class Player(threading.Thread):
 	def run(self):
 		print 'starting player'	
 		self.__loop()
+
+	def checkSongEnd(self):
+		for event in pygame.event.get():
+			if event.type == SONG_END:
+				self.next()
 
 	def load(self, filename):
 		"""Loads .mp3 or .wav files after making sure they're valid"""
