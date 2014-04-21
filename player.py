@@ -3,8 +3,9 @@
 import pygame
 from pygame import mixer
 import os
+import threading
 
-class Player():
+class Player(threading.Thread):
 	"""Main class for playing Drake AND ONLY DRAKE GODDAMNIT!!"""
 
 	def __loadFiles(self):
@@ -13,12 +14,21 @@ class Player():
 			for f in files:
 				self.Files.append(root + "/" + f) #add each file to our list of Files
 	
+	def __printCurrentSong(self):
+		print('Now playing: ' + self.Files[self.CurrentPosition])
+
+	def __loop(self):
+		while 1:
+			if not self.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
+				self.next()
+
 	def __init__(self):
 		"""Initializes player in this order:
 		   External libraries
 		   Data attributes
 		   Populating data attributes
 		"""
+		threading.Thread.__init__(self)
 		mixer.pre_init(44100, -16, 2, 2048) 	#frequency, size, channels, buffersize
 		pygame.init()
 	
@@ -29,8 +39,12 @@ class Player():
 
 		self.__loadFiles()
 
-		self.TotalFiles = len(self.Files)
+		self.TotalFiles = len(self.Files)	
 	
+	def run(self):
+		print 'starting player'	
+		self.__loop()
+
 	def load(self, filename):
 		"""Loads .mp3 or .wav files after making sure they're valid"""
 		if isinstance(filename, str): 			#check if input is string
@@ -44,12 +58,13 @@ class Player():
 
 	def play(self):
 		"""Plays the CURRENTLY LOADED file.  Note that this function doesn't call self.stop()"""
-		if self.CurrentPosition > self.TotalFiles:	#check if we're in valid space
+		if self.CurrentPosition > self.TotalFiles-1:	#check if we're in valid space
 			self.CurrentPosition = 0
 
 		self.load(self.Files[self.CurrentPosition])
 		mixer.music.play() #play once
 		self.isStopped = False
+		self.__printCurrentSong()
 
 	def playSong(self, song):
 		"""Plays a specific song"""
@@ -75,53 +90,3 @@ class Player():
 		self.CurrentPosition = self.CurrentPosition + 1
 		self.play()
 
-p = Player()
-nextStrings = ['n', 'ne', 'next']
-playStrings = ['pl', 'play']
-stopStrings = ['s', 'st', 'stop']
-pauseStrings = ['p', 'pa', 'pause']
-quitStrings = ['q', 'quit']
-
-isPlaying = True
-
-def handleInput(userinput):
-	"""What if a song has 'quit' in it?
-	   split string at ' '
-	"""
-	print userinput
-
-	if any(userinput in string for string in nextStrings):
-		p.next()
-	
-	elif any(userinput in string for string in stopStrings):
-		p.stop()
-
-	elif any(userinput in string for string in pauseStrings):
-		p.pause()
-
-	elif any(userinput.split(' ', 1)[0] in string for string in playStrings):	#"play x"
-		command = userinput.split(' ', 1)[0]  						 		 	#split once at first space
-		try:
-			song = userinput.split(' ', 1)[1]
-
-			if any(song in string for string in p.Files):				 		#if song is in list of p.Files
-				p.playSong([s for s in p.Files if (song in s)])     			#returns a list of songs that contain the same string as userinput
-		except IndexError:														 
-			p.play() 															#no song appended to the command. "play"
-
-	elif any(userinput in string for string in quitStrings):
-		p.stop()
-		isPlaying = False
-			
-	else:
-		print 'DrakePlayer cannot process' + userinput +'.\n'
-#debug
-if __name__ == '__main__':
-	p.play()
-
-	while isPlaying:
-		if not p.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
-			p.next()
-
-		userinput = raw_input('DrakePlayer: ')
-		handleInput(userinput)
