@@ -5,6 +5,10 @@ from pygame import mixer
 import os
 import threading
 import time
+import sys
+
+import ConsoleManip
+import DrakeValidation
 
 SONG_END = pygame.USEREVENT + 1
 
@@ -18,19 +22,17 @@ class Player(threading.Thread):
 				self.Files.append(root + "/" + f) #add each file to our list of Files
 	
 	def __printCurrentSong(self):
-		print('Now playing: ' + self.Files[self.CurrentPosition])
+		sys.stdout.write(ConsoleManip.up_line())
+		sys.stdout.write(ConsoleManip.up_line())
+		sys.stdout.write(ConsoleManip.clear_line())		
+		print('Now playing: ' + self.Files[self.CurrentPosition] + '\n')
 
 	def __loop(self):
-		while True:
-			#if not self.isStopped and mixer.music.get_busy() == 0: #if user didn't stop player and mixer is not busy, a song ended
-			#	self.next()
-			#time.sleep(1)
-			
-			event =  pygame.event.wait()
+		while True:		
+			event =  pygame.event.wait() #gets an event from pygame's event queue "non-blocking"
 		
 			if event.type == SONG_END:
-				self.next() 
-			#time.sleep(1)
+				self.next()
 
 	def __init__(self):
 		"""Initializes player in this order:
@@ -53,7 +55,6 @@ class Player(threading.Thread):
 		self.TotalFiles = len(self.Files)	
 	
 	def run(self):
-		print 'starting player'	
 		self.__loop()
 
 	def checkSongEnd(self):
@@ -64,9 +65,9 @@ class Player(threading.Thread):
 	def load(self, filename):
 		"""Loads .mp3 or .wav files after making sure they're valid"""
 		if isinstance(filename, str): 			#check if input is string
-			if filename.split('.')[1] == 'mp3': #check if file type is mp3
+			if filename.rsplit('.', 1)[1] == 'mp3': #check if file type is mp3
 				mixer.music.load(os.path.join('', filename)) #cd mp3 & load file
-			elif filename.split('.')[1] == 'wav':
+			elif filename.rsplit('.', 1)[1] == 'wav':
 				mixer.music.load(os.path.join('wav', filename))
 
 		else:
@@ -77,14 +78,20 @@ class Player(threading.Thread):
 		if self.CurrentPosition > self.TotalFiles-1:	#check if we're in valid space
 			self.CurrentPosition = 0
 
-		self.load(self.Files[self.CurrentPosition])
-		mixer.music.play() #play once
-		self.isStopped = False
-		self.__printCurrentSong()
+		songfile = self.Files[self.CurrentPosition]
+
+		if DrakeValidation.verifyDrake(songfile):
+			self.load(songfile)
+			mixer.music.play() #play once
+			self.isStopped = False
+		
+			self.__printCurrentSong()
+
+		else:
+			self.next()
 
 	def playSong(self, song):
 		"""Plays a specific song"""
-		#currently only plays one song; what if userinput returns 2 songs?  queue them up?
 		self.stop()
 		self.CurrentPosition = self.Files.index(song[0])
 		self.play()
