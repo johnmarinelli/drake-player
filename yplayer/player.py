@@ -8,7 +8,7 @@ import time
 import sys
 
 import ConsoleManip
-import DrakeValidation
+import drakevalidation
 
 SONG_END = pygame.USEREVENT + 1
 
@@ -89,8 +89,10 @@ class Player(threading.Thread):
 		songfile = self.Files[self.CurrentPosition]
 
 		if self.isOnDrakeToday:
-			if DrakeValidation.verifyDrake(songfile):
+			if drakevalidation.verifyDrake(songfile):
 				self.__play(songfile)
+			else:
+				self.next()
 
 		else:
 			self.__play(songfile)

@@ -9,7 +9,7 @@ def verifyDrake(songfile):
 	if 'Drake' in f.read():
 		isDrake = True
 	else:
-		print('Nah')
+		print('Found some shit thats not Drake.  Continuing...')
 		isDrake = False
 
 	return isDrake

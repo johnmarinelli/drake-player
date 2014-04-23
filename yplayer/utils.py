@@ -3,8 +3,7 @@
 import ConsoleManip
 import sys
 
-from main import p
-from AsciiArt import TitleArt
+from yololplayer import p
 
 nextStrings = ['n', 'ne', 'next']
 playStrings = ['pl', 'play']
