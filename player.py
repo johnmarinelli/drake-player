@@ -15,6 +15,13 @@ SONG_END = pygame.USEREVENT + 1
 class Player(threading.Thread):
 	"""Main class for playing Drake AND ONLY DRAKE GODDAMNIT!!"""
 
+	def __play(self, songfile):
+		self.load(songfile)
+		mixer.music.play() #play once
+		self.isStopped = False
+			
+		self.__printCurrentSong()
+
 	def __loadFiles(self):
 		"""Adds all files in 'mp3' folder to our Files variable"""
 		for (root, dirs, files) in os.walk('mp3'):
@@ -47,6 +54,7 @@ class Player(threading.Thread):
 		
 		self.isPaused = False
 		self.isStopped = False
+		self.isOnDrakeToday = True
 		self.Files = []
 		self.CurrentPosition = 0;
 
@@ -74,21 +82,18 @@ class Player(threading.Thread):
 			print "Can't find " + filename
 
 	def play(self):
-		"""Plays the CURRENTLY LOADED file.  Note that this function doesn't call self.stop()"""
+		"""Plays the CURRENTLY LOADED file.  Note that this function doesn't call self.stop() before playing"""
 		if self.CurrentPosition > self.TotalFiles-1:	#check if we're in valid space
 			self.CurrentPosition = 0
 
 		songfile = self.Files[self.CurrentPosition]
 
-		if DrakeValidation.verifyDrake(songfile):
-			self.load(songfile)
-			mixer.music.play() #play once
-			self.isStopped = False
-		
-			self.__printCurrentSong()
+		if self.isOnDrakeToday:
+			if DrakeValidation.verifyDrake(songfile):
+				self.__play(songfile)
 
 		else:
-			self.next()
+			self.__play(songfile)
 
 	def playSong(self, song):
 		"""Plays a specific song"""
